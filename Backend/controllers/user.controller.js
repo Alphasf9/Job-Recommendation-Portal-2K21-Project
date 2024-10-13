@@ -1,3 +1,4 @@
+import jwt from "jsonwebtoken";
 import { User } from "../models/user.model.js";
 import bcrypt from 'bcryptjs'
 
@@ -58,7 +59,7 @@ export const login = async (req, res) => {
             })
         }
 
-        const user = await User.findOne({ email });
+        let user = await User.findOne({ email });
 
         if (!user) {
             return res.status(400).json({
@@ -82,6 +83,24 @@ export const login = async (req, res) => {
                 success: false
             })
         };
+
+        const tokenData = {
+            userId: user._id
+        }
+
+        user = {
+            _id: user._id,
+            fullName: user.fullName,
+            phoneNumber: user.phoneNumber,
+            role: user.role,
+            profile: user.profile
+        }
+        const token = await jwt.sign(tokenData, process.env.SECRET_KEY, { expiresIn: '1d' });
+        return res.status(200).cookie("token", token, { maxAge: 1 * 24 * 60 * 60 * 1000, httpsOnly: true, sameSite: 'strict' }).json({
+            message: `Welcome back ${user.fullName}`,
+            user,
+            success: true
+        });
 
     } catch (error) {
         res.status(500).json({
