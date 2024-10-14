@@ -4,9 +4,9 @@ import bcrypt from 'bcryptjs'
 
 export const register = async (req, res) => {
     try {
-        const { fullname, email, phoneNumber, role, profile, password } = req.body;
+        const { fullname, email, phoneNumber, role, password } = req.body;
 
-        if (!fullname || !email || !phoneNumber || !role || !profile || !password) {
+        if (!fullname || !email || !phoneNumber || !role  || !password) {
             return res.status(400).json({
                 message: 'Something is missing',
                 success: false
@@ -90,21 +90,94 @@ export const login = async (req, res) => {
 
         user = {
             _id: user._id,
-            fullName: user.fullName,
+            fullName: user.fullname,
             phoneNumber: user.phoneNumber,
             role: user.role,
             profile: user.profile
         }
         const token = await jwt.sign(tokenData, process.env.SECRET_KEY, { expiresIn: '1d' });
         return res.status(200).cookie("token", token, { maxAge: 1 * 24 * 60 * 60 * 1000, httpsOnly: true, sameSite: 'strict' }).json({
-            message: `Welcome back ${user.fullName}`,
+            message: `Welcome back ${user.fullname}`,
             user,
             success: true
         });
 
     } catch (error) {
         res.status(500).json({
-            message: 'Server error',
+            message: 'Server error while logging in',
+            success: false,
+            error: error.message
+        });
+    }
+}
+
+export const logout = async (req, res) => {
+    try {
+        return res.status(200).cookie("token", "", { maxAge: 0 }).json({
+            message: "Logged out successfully",
+            success: true
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: 'Server error while logging out',
+            success: false,
+            error: error.message
+        });
+    }
+}
+
+export const updateProfile = async (req, res) => {
+    try {
+        const { fullname, email, phoneNumber, skills, bio } = req.body;
+        const file = req.file;
+
+        if (!fullname || !email || !phoneNumber || !skills || !bio) {
+            return res.status(400).json({
+                message: 'Something is missing while updating profile',
+                success: false
+            })
+        }
+
+        const skillsArray = skills.split(',');
+
+        const userId = req.id;
+
+        let user = await User.findById(userId);
+
+        if (!user) {
+            return res.status(404).json({
+                message: 'User not found',
+                success: false
+            })
+        }
+
+        user.fullname = fullname;
+        user.email = email;
+        user.phoneNumber = phoneNumber;
+        user.skills = skillsArray;
+        user.bio = bio;
+
+
+
+        await user.save();
+
+        user = {
+            _id: user._id,
+            fullName: user.fullname,
+            phoneNumber: user.phoneNumber,
+            role: user.role,
+            profile: user.profile
+        }
+
+        return res.status(200).json({
+            message: 'Profile updated successfully',
+            user,
+            success: true
+        })
+
+    } catch (error) {
+        res.status(500).json({
+            message: 'Server error while updating profile',
             success: false,
             error: error.message
         });
