@@ -6,7 +6,7 @@ export const register = async (req, res) => {
     try {
         const { fullname, email, phoneNumber, role, password } = req.body;
 
-        if (!fullname || !email || !phoneNumber || !role  || !password) {
+        if (!fullname || !email || !phoneNumber || !role || !password) {
             return res.status(400).json({
                 message: 'Something is missing',
                 success: false
@@ -90,12 +90,13 @@ export const login = async (req, res) => {
 
         user = {
             _id: user._id,
-            fullName: user.fullname,
+            fullname: user.fullname,
             phoneNumber: user.phoneNumber,
             role: user.role,
             profile: user.profile
         }
         const token = await jwt.sign(tokenData, process.env.SECRET_KEY, { expiresIn: '1d' });
+
         return res.status(200).cookie("token", token, { maxAge: 1 * 24 * 60 * 60 * 1000, httpsOnly: true, sameSite: 'strict' }).json({
             message: `Welcome back ${user.fullname}`,
             user,
@@ -131,31 +132,28 @@ export const updateProfile = async (req, res) => {
         const { fullname, email, phoneNumber, skills, bio } = req.body;
         const file = req.file;
 
-        if (!fullname || !email || !phoneNumber || !skills || !bio) {
-            return res.status(400).json({
-                message: 'Something is missing while updating profile',
-                success: false
-            })
+        let skillsArray;
+        if (skills) {
+            skillsArray = skills.split(',');
         }
 
-        const skillsArray = skills.split(',');
 
         const userId = req.id;
 
         let user = await User.findById(userId);
 
         if (!user) {
-            return res.status(404).json({
+            return res.status(400).json({
                 message: 'User not found',
                 success: false
             })
         }
 
-        user.fullname = fullname;
-        user.email = email;
-        user.phoneNumber = phoneNumber;
-        user.skills = skillsArray;
-        user.bio = bio;
+        if (fullname) user.fullname = fullname;
+        if (email) user.email = email;
+        if (phoneNumber) user.phoneNumber = phoneNumber;
+        if (skills) user.skills = skillsArray;
+        if (bio) user.bio = bio;
 
 
 
@@ -163,7 +161,7 @@ export const updateProfile = async (req, res) => {
 
         user = {
             _id: user._id,
-            fullName: user.fullname,
+            fullname: user.fullname,
             phoneNumber: user.phoneNumber,
             role: user.role,
             profile: user.profile
