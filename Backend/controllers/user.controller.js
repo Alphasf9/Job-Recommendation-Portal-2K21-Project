@@ -140,26 +140,39 @@ export const updateProfile = async (req, res) => {
 
         const userId = req.id;
 
-        let user = await User.findById(userId);
+        let updateFileds = {};
+
+        // let user = await User.findById(userId);
+
+        // if (!user) {
+        //     return res.status(400).json({
+        //         message: 'User not found',
+        //         success: false
+        //     })
+        // }
+
+        if (fullname) updateFileds.fullname = fullname;
+        if (email) updateFileds.email = email;
+        if (phoneNumber) updateFileds.phoneNumber = phoneNumber;
+        if (skills) updateFileds.skills = skillsArray;
+        if (bio) updateFileds.bio = bio;
+
+
+
+        const user = await User.findByIdAndUpdate(userId,
+            { $set: updateFileds },
+            { $new: true, runValidators: true }
+        );
+
 
         if (!user) {
-            return res.status(400).json({
-                message: 'User not found',
+            return res.status(401).json({
+                message: "Invalid user found while updating profile.",
                 success: false
             })
         }
 
-        if (fullname) user.fullname = fullname;
-        if (email) user.email = email;
-        if (phoneNumber) user.phoneNumber = phoneNumber;
-        if (skills) user.skills = skillsArray;
-        if (bio) user.bio = bio;
-
-
-
-        await user.save();
-
-        user = {
+        const repsonseUser = {
             _id: user._id,
             fullname: user.fullname,
             phoneNumber: user.phoneNumber,
@@ -169,9 +182,25 @@ export const updateProfile = async (req, res) => {
 
         return res.status(200).json({
             message: 'Profile updated successfully',
-            user,
+            repsonseUser,
             success: true
         })
+
+        // await user.save();
+
+        // user = {
+        //     _id: user._id,
+        //     fullname: user.fullname,
+        //     phoneNumber: user.phoneNumber,
+        //     role: user.role,
+        //     profile: user.profile
+        // }
+
+        // return res.status(200).json({
+        //     message: 'Profile updated successfully',
+        //     user,
+        //     success: true
+        // })
 
     } catch (error) {
         res.status(500).json({
