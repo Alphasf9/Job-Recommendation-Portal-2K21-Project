@@ -37,7 +37,7 @@ const jobSchema = new mongoose.Schema({
 
     company: {
         type: mongoose.Schema.Types.ObjectId, ref: 'Company',
-        required: true,
+        required: true
     },
 
     experience: {
@@ -47,7 +47,7 @@ const jobSchema = new mongoose.Schema({
 
     createdBy: {
         type: mongoose.Schema.Types.ObjectId, ref: 'User',
-        reuired: true
+        required: true
     },
 
     applications: [

@@ -132,7 +132,7 @@ export const updateProfile = async (req, res) => {
         const { fullname, email, phoneNumber, skills, bio } = req.body;
         const file = req.file;
 
-        let skillsArray;
+        let skillsArray = [];
         if (skills) {
             skillsArray = skills.split(',');
         }
@@ -140,29 +140,21 @@ export const updateProfile = async (req, res) => {
 
         const userId = req.id;
 
-        let updateFileds = {};
 
-        // let user = await User.findById(userId);
+        let user = await User.findById(userId);
 
-        // if (!user) {
-        //     return res.status(400).json({
-        //         message: 'User not found',
-        //         success: false
-        //     })
-        // }
+        if (!user) {
+            return res.status(400).json({
+                message: 'User not found',
+                success: false
+            })
+        }
 
-        if (fullname) updateFileds.fullname = fullname;
-        if (email) updateFileds.email = email;
-        if (phoneNumber) updateFileds.phoneNumber = phoneNumber;
-        if (skills) updateFileds.skills = skillsArray;
-        if (bio) updateFileds.bio = bio;
-
-
-
-        const user = await User.findByIdAndUpdate(userId,
-            { $set: updateFileds },
-            { $new: true, runValidators: true }
-        );
+        if (fullname) user.fullname = fullname;
+        if (email) user.email = email;
+        if (phoneNumber) user.phoneNumber = phoneNumber;
+        if (skills) user.skills = skillsArray;
+        if (bio) user.bio = bio;
 
 
         if (!user) {
@@ -172,35 +164,28 @@ export const updateProfile = async (req, res) => {
             })
         }
 
-        const repsonseUser = {
+
+        user.profile.skills = skillsArray;
+
+
+        await user.save();
+
+        user = {
             _id: user._id,
             fullname: user.fullname,
             phoneNumber: user.phoneNumber,
             role: user.role,
-            profile: user.profile
+            profile: user.profile,
+            skills: user.skillsArray
         }
+
+
 
         return res.status(200).json({
             message: 'Profile updated successfully',
-            repsonseUser,
+            user,
             success: true
         })
-
-        // await user.save();
-
-        // user = {
-        //     _id: user._id,
-        //     fullname: user.fullname,
-        //     phoneNumber: user.phoneNumber,
-        //     role: user.role,
-        //     profile: user.profile
-        // }
-
-        // return res.status(200).json({
-        //     message: 'Profile updated successfully',
-        //     user,
-        //     success: true
-        // })
 
     } catch (error) {
         res.status(500).json({
