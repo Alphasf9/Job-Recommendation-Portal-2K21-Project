@@ -1,9 +1,36 @@
 import { Job } from "../models/job.model.js";
+import { User } from "../models/user.model.js";
+
 
 export const postJob = async (req, res) => {
     try {
         const { title, description, requirements, salary, location, jobType, position, companyId, experience } = req.body;
+
+
         const userId = req.id;
+        const user = await User.findById(userId).exec();
+
+        console.log(user);
+
+        const { role } = user.toObject();
+
+
+        if (!role) {
+            return res.status(404).json({
+                message: "Invalid role detected",
+                success: false
+            })
+        };
+
+
+
+        if (role != 'recruiter') {
+            return res.status(404).json({
+                message: `Unauthorized access : ${role}`,
+                success: false
+            })
+        };
+
 
         if (!title || !description || !requirements || !salary || !companyId || !experience || !jobType || !position || !location) {
             return res.status(404).json({
@@ -11,6 +38,9 @@ export const postJob = async (req, res) => {
                 success: false
             });
         }
+
+
+
 
         const job = await Job.create({
             title,
@@ -23,14 +53,18 @@ export const postJob = async (req, res) => {
             position,
             company: companyId,
             createdBy: userId
-        })
+        });
 
         if (!job) {
             return res.status(404).json({
                 message: "Unable to create job",
                 success: false
             })
-        }
+        };
+
+
+
+
 
         return res.status(200).json({
             message: "Job created successfully",
