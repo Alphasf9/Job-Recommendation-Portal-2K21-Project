@@ -7,6 +7,7 @@ import { Avatar, AvatarImage } from "@radix-ui/react-avatar";
 import React from "react";
 import { Button } from "../ui/button";
 import { LogOut, User2 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Navbar = () => {
   const user = false;
@@ -15,7 +16,7 @@ const Navbar = () => {
       <div className="flex items-center justify-between mx-auto max-w-7xl h-16">
         <div>
           <h1 className="text-2xl font-bold">
-            Job<span className="text-red-500">Portal</span>
+            Job<span className="text-lime-400">Portal</span>
           </h1>
         </div>
         <div className="flex items-center gap-12">
@@ -32,10 +33,14 @@ const Navbar = () => {
           </ul>
           {!user ? (
             <div className="flex items-center gap-4">
-              <Button variant="outline">Login</Button>
-              <Button variant="outline" className="bg-lime-300">
-                Signup
-              </Button>
+              <Link to="/login">
+                <Button variant="outline">Login</Button>
+              </Link>
+              <Link to="/signup">
+                <Button variant="outline" className="bg-lime-300">
+                  Signup
+                </Button>
+              </Link>
             </div>
           ) : (
             <Popover>
