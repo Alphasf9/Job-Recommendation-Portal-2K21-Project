@@ -4,9 +4,9 @@ import bcrypt from 'bcryptjs'
 
 export const register = async (req, res) => {
     try {
-        const { fullname, email, phoneNumber, role, password } = req.body;
+        const { fullname, email, phoneNumber, role, password, confirmpassword } = req.body;
 
-        if (!fullname || !email || !phoneNumber || !role || !password) {
+        if (!fullname || !email || !phoneNumber || !role || !password || !confirmpassword) {
             return res.status(400).json({
                 message: 'Something is missing',
                 success: false
@@ -29,6 +29,7 @@ export const register = async (req, res) => {
             email,
             phoneNumber,
             password: hashPassword,
+            confirmpassword: hashPassword,
             role
         })
 
